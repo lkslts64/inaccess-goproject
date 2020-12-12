@@ -12,9 +12,12 @@ const (
 	year  = "1y"
 )
 
+var errLimit = errors.New("reached limit")
+
 // List returns the period task list between (t1,t2) with period `period`.
 // Period should be one of {1h,1d,1mo,1y}.
-func List(t1, t2 time.Time, period string) ([]time.Time, error) {
+// `limit` limits the number of results contained in the list.
+func List(t1, t2 time.Time, period string, limit int) ([]time.Time, error) {
 	if t1.After(t2) {
 		return nil, errors.New("t1 comes after t2")
 	}
@@ -30,8 +33,12 @@ func List(t1, t2 time.Time, period string) ([]time.Time, error) {
 	next := pt.nextInvocationTime()
 	for ; next.Before(t2); next = pt.nextInvocationTime() {
 		ptlist = append(ptlist, next)
+		if len(ptlist) > limit {
+			err = errLimit
+			break
+		}
 	}
-	return ptlist, nil
+	return ptlist, err
 }
 
 type periodTask struct {

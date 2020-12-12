@@ -41,7 +41,7 @@ func tasksHandler(w http.ResponseWriter, r *http.Request, period string) {
 		}
 		return
 	}
-	ptlist, err := ptask.List(t1, t2, period)
+	ptlist, err := ptask.List(t1, t2, period, 1<<20)
 	if err != nil {
 		err := enc.Encode(reqErr{
 			Status: "error",

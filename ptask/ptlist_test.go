@@ -7,6 +7,7 @@ import (
 
 const layout = "20060102T150405Z"
 const tz = "Europe/Athens"
+const limit = 1 << 10
 
 func TestPtlist(t *testing.T) {
 
@@ -30,11 +31,16 @@ func TestPtlist(t *testing.T) {
 		{t1: parseTimePanicOnErr("19900301T000000Z"), t2: parseTimePanicOnErr("20200301T235959Z"), p: "1y", want: 30},
 		{t1: parseTimePanicOnErr("20200301T000000Z"), t2: parseTimePanicOnErr("20200302T142959Z"), p: "1h", want: 39},
 		{t1: parseTimePanicOnErr("20200101T000000Z"), t2: parseTimePanicOnErr("20280101T000000Z"), p: "1y", want: 8},
+		{t1: parseTimePanicOnErr("17000301T000000Z"), t2: parseTimePanicOnErr("20200301T235959Z"), p: "1h", want: 1025},
 	}
 
 	for _, tt := range tests {
-		list, err := List(tt.t1, tt.t2, tt.p)
+		list, err := List(tt.t1, tt.t2, tt.p, limit)
 		if err != nil {
+			if err == errLimit && tt.want > limit {
+				//we wanted to get a limitErr
+				continue
+			}
 			t.Error(err)
 		}
 		if len(list) != tt.want {
